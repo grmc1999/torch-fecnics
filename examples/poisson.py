@@ -1,8 +1,11 @@
 import torch
 
 # Import fenics and override necessary data structures with fenics_adjoint
-from fenics import *
-from fenics_adjoint import *
+import os
+import sys
+sys.append("..")
+from torch_fenics.torch_fenics import *
+from firedrake.adjoint import *
 
 import torch_fenics
 
