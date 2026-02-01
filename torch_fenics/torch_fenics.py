@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
-import fenics
-import fenics_adjoint
+#import fenics
+#import fenics_adjoint
+import firedrake
+from  firedrake import adjoint
 import torch
 import numpy as np
 
