@@ -1,7 +1,7 @@
 #import fenics
 #fenics.set_log_level(fenics.LogLevel.ERROR)
 import firedrake
-firedrake.set_log_level(firedrake.LogLevel.ERROR)
+#firedrake.set_log_level(firedrake.LogLevel.ERROR)
 
 from .torch_fenics import FEniCSModule
 
