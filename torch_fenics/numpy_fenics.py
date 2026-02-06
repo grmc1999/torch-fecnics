@@ -7,7 +7,8 @@ import numpy as np
 
 def fenics_to_numpy(fenics_var):
     """Convert FEniCS variable to numpy array"""
-    if isinstance(fenics_var, (firedrake.Constant, adjoint.Constant)):
+    #if isinstance(fenics_var, (firedrake.Constant, adjoint.Constant)):
+    if isinstance(fenics_var, (firedrake.Constant)):
         return fenics_var.values()
 
     if isinstance(fenics_var, (firedrake.Function, adjoint.Constant)):
