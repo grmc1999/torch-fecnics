@@ -33,7 +33,8 @@ def fenics_to_numpy(fenics_var):
 def numpy_to_fenics(numpy_array, fenics_var_template):
     """Convert numpy array to FEniCS variable"""
 #    if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
-    if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
+    #if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
+    if isinstance(fenics_var_template, (firedrake.Constant,)):
         if numpy_array.shape == (1,):
             return type(fenics_var_template)(numpy_array[0])
         else:
