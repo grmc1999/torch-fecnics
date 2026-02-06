@@ -52,8 +52,8 @@ class FEniCSFunction(torch.autograd.Function):
             fenics_inputs.append(numpy_fenics.numpy_to_fenics(inp, template))
 
         # Create tape associated with this forward pass
-        tape = fenics_adjoint.Tape()
-        fenics_adjoint.set_working_tape(tape)
+        tape = adjoint.Tape()
+        adjoint.set_working_tape(tape)
 
         # Execute forward pass
         fenics_outputs = fenics_solver.solve(*fenics_inputs)
@@ -83,18 +83,18 @@ class FEniCSFunction(torch.autograd.Function):
         for grad_output, fenics_output in zip(grad_outputs, ctx.fenics_outputs):
             adj_value = numpy_fenics.numpy_to_fenics(grad_output.numpy(), fenics_output)
             # Special case
-            if isinstance(adj_value, (fenics.Function, fenics_adjoint.Function)):
+            if isinstance(adj_value, (firedrake.Function, adjoint.Function)):
                 adj_value = adj_value.vector()
             adj_values.append(adj_value)
 
         # Check which gradients need to be computed
-        controls = list(map(fenics_adjoint.Control,
+        controls = list(map(adjoint.Control,
                             (c for g, c in zip(ctx.needs_input_grad[1:], ctx.fenics_inputs) if g)))
 
         # Compute and accumulate gradient for each output with respect to each input
         accumulated_grads = [None] * len(controls)
         for fenics_output, adj_value in zip(ctx.fenics_outputs, adj_values):
-            fenics_grads = fenics_adjoint.compute_gradient(fenics_output, controls,
+            fenics_grads = adjoint.compute_gradient(fenics_output, controls,
                                                            tape=ctx.tape, adj_value=adj_value)
 
             # Convert FEniCS gradients to tensor representation
