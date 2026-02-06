@@ -11,7 +11,8 @@ def fenics_to_numpy(fenics_var):
     if isinstance(fenics_var, (firedrake.Constant)):
         return fenics_var.values()
 
-    if isinstance(fenics_var, (firedrake.Function, adjoint.Constant)):
+    #if isinstance(fenics_var, (firedrake.Function, adjoint.Constant)):
+    if isinstance(fenics_var, (firedrake.Function,)):
         #np_array = fenics_var.vector().get_local()
         np_array = fenics_var.dat.data_ro
         assert isinstance(np_array,np.ndarray) # for multi space this is a tuple
