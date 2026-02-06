@@ -83,7 +83,7 @@ class FEniCSFunction(torch.autograd.Function):
         for grad_output, fenics_output in zip(grad_outputs, ctx.fenics_outputs):
             adj_value = numpy_fenics.numpy_to_fenics(grad_output.numpy(), fenics_output)
             # Special case
-            if isinstance(adj_value, (firedrake.Function, adjoint.Function)):
+            if isinstance(adj_value, (firedrake.Function,)):
                 adj_value = adj_value.vector()
             adj_values.append(adj_value)
 
