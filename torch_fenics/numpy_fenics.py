@@ -16,7 +16,8 @@ def fenics_to_numpy(fenics_var):
         #np_array = fenics_var.vector().get_local()
         np_array = fenics_var.dat.data_ro
         assert isinstance(np_array,np.ndarray) # for multi space this is a tuple
-        n_sub = fenics_var.function_space().num_sub_spaces()
+        #n_sub = fenics_var.function_space().num_sub_spaces()
+        n_sub = len(fenics_var.function_space().subspaces)
         # Reshape if function is multi-component
         if n_sub != 0:
             np_array = np.reshape(np_array, (len(np_array) // n_sub, n_sub))
