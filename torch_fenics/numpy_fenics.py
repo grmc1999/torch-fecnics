@@ -42,7 +42,8 @@ def numpy_to_fenics(numpy_array, fenics_var_template):
         else:
             return type(fenics_var_template)(numpy_array)
 
-    if isinstance(fenics_var_template, (firedrake.Function, adjoint.Function)):
+    #if isinstance(fenics_var_template, (firedrake.Function, adjoint.Function)):
+    if isinstance(fenics_var_template, (firedrake.Function,)):
         np_n_sub = numpy_array.shape[-1]
         np_size = np.prod(numpy_array.shape)
 
