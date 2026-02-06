@@ -65,8 +65,9 @@ def numpy_to_fenics(numpy_array, fenics_var_template):
                       'but got {}'.format(np.float64, numpy_array.dtype)
             raise ValueError(err_msg)
 
-        u.vector().set_local(np.reshape(numpy_array, fenics_size))
-        u.vector().apply('insert')
+        #u.vector().set_local(np.reshape(numpy_array, fenics_size))
+        u.dat.data[:] = np.reshape(numpy_array, fenics_size)
+        #u.vector().apply('insert')
         return u
 
     if isinstance(fenics_var_template, adjoint.AdjFloat):
