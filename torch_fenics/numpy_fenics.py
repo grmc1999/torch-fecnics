@@ -11,7 +11,9 @@ def fenics_to_numpy(fenics_var):
         return fenics_var.values()
 
     if isinstance(fenics_var, (firedrake.Function, adjoint.Constant)):
-        np_array = fenics_var.vector().get_local()
+        #np_array = fenics_var.vector().get_local()
+        np_array = fenics_var.dat.data_ro
+        assert isinstance(np_array,np.ndarray) # for multi space this is a tuple
         n_sub = fenics_var.function_space().num_sub_spaces()
         # Reshape if function is multi-component
         if n_sub != 0:
@@ -29,6 +31,7 @@ def fenics_to_numpy(fenics_var):
 
 def numpy_to_fenics(numpy_array, fenics_var_template):
     """Convert numpy array to FEniCS variable"""
+#    if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
     if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
         if numpy_array.shape == (1,):
             return type(fenics_var_template)(numpy_array[0])
