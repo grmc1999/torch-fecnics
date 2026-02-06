@@ -50,8 +50,10 @@ def numpy_to_fenics(numpy_array, fenics_var_template):
         function_space = fenics_var_template.function_space()
 
         u = type(fenics_var_template)(function_space)
-        fenics_size = u.vector().local_size()
-        fenics_n_sub = function_space.num_sub_spaces()
+        #fenics_size = u.vector().local_size()
+        fenics_size = len(u.dat.data_ro)
+        #fenics_n_sub = function_space.num_sub_spaces()
+        fenics_n_sub = len(function_space.subspaces)
 
         if (fenics_n_sub != 0 and np_n_sub != fenics_n_sub) or np_size != fenics_size:
             err_msg = 'Cannot convert numpy array to Function:' \
