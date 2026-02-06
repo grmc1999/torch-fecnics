@@ -60,9 +60,9 @@ def numpy_to_fenics(numpy_array, fenics_var_template):
                       ' Wrong shape {} vs {}'.format(numpy_array.shape, u.vector().get_local().shape)
             raise ValueError(err_msg)
 
-        if numpy_array.dtype != np.float_:
+        if numpy_array.dtype != np.float64:
             err_msg = 'The numpy array must be of type {}, ' \
-                      'but got {}'.format(np.float_, numpy_array.dtype)
+                      'but got {}'.format(np.float64, numpy_array.dtype)
             raise ValueError(err_msg)
 
         u.vector().set_local(np.reshape(numpy_array, fenics_size))
