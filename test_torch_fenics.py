@@ -143,7 +143,7 @@ def test_squares():
     assert torch.autograd.gradcheck(squares, (f1, f2))
 
 
-@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
+#@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
 def test_poisson():
     f = torch.tensor([[1.0]], requires_grad=True).double()
     g = torch.tensor([[0.0]], requires_grad=True).double()
@@ -151,7 +151,7 @@ def test_poisson():
     assert torch.autograd.gradcheck(poisson, (f, g))
 
 
-@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
+#@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
 def test_doublepoisson():
     f1 = torch.tensor([[1.0]], requires_grad=True).double()
     f2 = torch.tensor([[2.0]], requires_grad=True).double()
@@ -159,14 +159,14 @@ def test_doublepoisson():
     assert torch.autograd.gradcheck(double_poisson, (f1, f2))
 
 
-@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
+#@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
 def test_stokes():
     f = torch.tensor([[1.0, 1.0]], requires_grad=True).double()
     stokes = Stokes()
     assert torch.autograd.gradcheck(stokes, (f,))
 
 
-@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
+#@pytest.mark.skipif(MPI.comm_world.Get_size() > 1, reason='Running with MPI')
 def test_input_type():
     f = np.array([[1.0]])
     g = np.array([[0.0]])
