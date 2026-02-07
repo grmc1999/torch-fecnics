@@ -1,7 +1,7 @@
 import pytest
 
-from fenics import *
-from fenics_adjoint import *
+from firedrake import *
+from firedrake.adjoint import *
 
 import torch
 import numpy as np
