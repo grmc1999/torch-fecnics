@@ -1,32 +1,30 @@
 #import fenics
-import firedrake
-from  firedrake import adjoint
+from dolfinx import fem
+from dolfinx.fem import *
+import pyadjoint
+from pyadjoint import *
 #import fenics_adjoint
 import numpy as np
 
 
 def fenics_to_numpy(fenics_var):
     """Convert FEniCS variable to numpy array"""
-    #if isinstance(fenics_var, (firedrake.Constant, adjoint.Constant)):
-    if isinstance(fenics_var, (firedrake.Constant)):
+    if isinstance(fenics_var, (fem.Constant, pyadjoint.Constant)):
         return fenics_var.values()
 
-    #if isinstance(fenics_var, (firedrake.Function, adjoint.Constant)):
-    if isinstance(fenics_var, (firedrake.Function,)):
-        #np_array = fenics_var.vector().get_local()
-        np_array = fenics_var.dat.data_ro
+    if isinstance(fenics_var, (fem.Function, pyadjoint.Constant)):
+        np_array = fenics_var.vector().get_local()
         assert isinstance(np_array,np.ndarray) # for multi space this is a tuple
-        #n_sub = fenics_var.function_space().num_sub_spaces()
-        n_sub = len(fenics_var.function_space().subspaces)
+        n_sub = fenics_var.function_space().num_sub_spaces()
         # Reshape if function is multi-component
         if n_sub != 0:
             np_array = np.reshape(np_array, (len(np_array) // n_sub, n_sub))
         return np_array
 
-    if isinstance(fenics_var, firedrake.GenericVector):
+    if isinstance(fenics_var, fem.GenericVector):
         return fenics_var.get_local()
 
-    if isinstance(fenics_var, adjoint.AdjFloat):
+    if isinstance(fenics_var, pyadjoint.AdjFloat):
         return np.array(float(fenics_var), dtype=np.float_)
 
     raise ValueError('Cannot convert ' + str(type(fenics_var)))
@@ -34,26 +32,21 @@ def fenics_to_numpy(fenics_var):
 
 def numpy_to_fenics(numpy_array, fenics_var_template):
     """Convert numpy array to FEniCS variable"""
-#    if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
-    #if isinstance(fenics_var_template, (firedrake.Constant, adjoint.Constant)):
-    if isinstance(fenics_var_template, (firedrake.Constant,)):
+    if isinstance(fenics_var_template, (fem.Constant, pyadjoint.Constant)):
         if numpy_array.shape == (1,):
             return type(fenics_var_template)(numpy_array[0])
         else:
             return type(fenics_var_template)(numpy_array)
 
-    #if isinstance(fenics_var_template, (firedrake.Function, adjoint.Function)):
-    if isinstance(fenics_var_template, (firedrake.Function,)):
+    if isinstance(fenics_var_template, (fem.Function,pyadjoint.Function)):
         np_n_sub = numpy_array.shape[-1]
         np_size = np.prod(numpy_array.shape)
 
         function_space = fenics_var_template.function_space()
 
         u = type(fenics_var_template)(function_space)
-        #fenics_size = u.vector().local_size()
-        fenics_size = len(u.dat.data_ro)
-        #fenics_n_sub = function_space.num_sub_spaces()
-        fenics_n_sub = len(function_space.subspaces)
+        fenics_size = u.vector().local_size()
+        fenics_n_sub = function_space.num_sub_spaces()
 
         if (fenics_n_sub != 0 and np_n_sub != fenics_n_sub) or np_size != fenics_size:
             err_msg = 'Cannot convert numpy array to Function:' \
@@ -65,13 +58,12 @@ def numpy_to_fenics(numpy_array, fenics_var_template):
                       'but got {}'.format(np.float64, numpy_array.dtype)
             raise ValueError(err_msg)
 
-        #u.vector().set_local(np.reshape(numpy_array, fenics_size))
-        u.dat.data[:] = np.reshape(numpy_array, fenics_size)
-        #u.vector().apply('insert')
+        u.vector().set_local(np.reshape(numpy_array, fenics_size))
+        u.vector().apply('insert')
         return u
 
-    if isinstance(fenics_var_template, adjoint.AdjFloat):
-        return adjoint.AdjFloat(numpy_array)
+    if isinstance(fenics_var_template, pyadjoint.AdjFloat):
+        return pyadjoint.AdjFloat(numpy_array)
 
     err_msg = 'Cannot convert numpy array to {}'.format(fenics_var_template)
     raise ValueError(err_msg)
