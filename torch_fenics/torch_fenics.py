@@ -84,7 +84,8 @@ class FEniCSFunction(torch.autograd.Function):
             adj_value = numpy_fenics.numpy_to_fenics(grad_output.numpy(), fenics_output)
             # Special case
             if isinstance(adj_value, (firedrake.Function,)):
-                adj_value = adj_value.vector()
+                #adj_value = adj_value.vector()
+                adj_value = adj_value.dat.data_ro
             adj_values.append(adj_value)
 
         # Check which gradients need to be computed
