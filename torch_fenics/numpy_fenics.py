@@ -1,69 +1,113 @@
-#import fenics
 from dolfinx import fem
-from dolfinx.fem import *
-import pyadjoint
-from pyadjoint import *
-#import fenics_adjoint
 import numpy as np
 
+import pyadjoint  # keep if you really use AdjFloat/pyadjoint objects
 
-def fenics_to_numpy(fenics_var):
-    """Convert FEniCS variable to numpy array"""
-    if isinstance(fenics_var, (fem.Constant, pyadjoint.Constant)):
-        return fenics_var.values()
-
-    if isinstance(fenics_var, (fem.Function, pyadjoint.Constant)):
-        np_array = fenics_var.vector().get_local()
-        assert isinstance(np_array,np.ndarray) # for multi space this is a tuple
-        n_sub = fenics_var.function_space().num_sub_spaces()
-        # Reshape if function is multi-component
-        if n_sub != 0:
-            np_array = np.reshape(np_array, (len(np_array) // n_sub, n_sub))
-        return np_array
-
-    if isinstance(fenics_var, fem.GenericVector):
-        return fenics_var.get_local()
-
-    if isinstance(fenics_var, pyadjoint.AdjFloat):
-        return np.array(float(fenics_var), dtype=np.float_)
-
-    raise ValueError('Cannot convert ' + str(type(fenics_var)))
+try:
+    from petsc4py import PETSc
+except ImportError:
+    PETSc = None
 
 
-def numpy_to_fenics(numpy_array, fenics_var_template):
-    """Convert numpy array to FEniCS variable"""
-    if isinstance(fenics_var_template, (fem.Constant, pyadjoint.Constant)):
-        if numpy_array.shape == (1,):
-            return type(fenics_var_template)(numpy_array[0])
+def _owned_size(V: fem.FunctionSpace):
+    """Number of owned (non-ghost) entries in the dof vector for this space."""
+    imap = V.dofmap.index_map
+    bs = V.dofmap.index_map_bs  # block size (e.g. vector-valued spaces)
+    return imap.size_local * bs, bs
+
+
+def fenics_to_numpy(obj, *, owned_only: bool = True, reshape_blocks: bool = False, copy: bool = True):
+    """
+    Convert DOLFINx objects to numpy arrays.
+
+    Notes:
+      - Returns LOCAL data on each MPI rank (not gathered).
+      - If owned_only=True, ghost entries are excluded.
+      - If reshape_blocks=True and block-size > 1, reshapes to (-1, bs).
+    """
+    # DOLFINx Constant
+    if isinstance(obj, fem.Constant):
+        arr = np.asarray(obj.value)
+        return arr.copy() if copy else arr
+
+    # DOLFINx Function
+    if isinstance(obj, fem.Function):
+        # Make sure ghost values are consistent before reading
+        obj.x.scatter_forward()
+
+        V = obj.function_space
+        n_owned, bs = _owned_size(V)
+
+        x = obj.x.array  # includes ghosts
+        if owned_only:
+            x = x[:n_owned]
+
+        out = np.array(x, copy=copy)
+        if reshape_blocks and bs > 1:
+            out = out.reshape((-1, bs))
+        return out
+
+    # DOLFINx linear algebra vector (dolfinx.la.Vector)
+    if hasattr(obj, "array") and hasattr(obj, "scatter_forward"):
+        obj.scatter_forward()
+        arr = obj.array
+        return np.array(arr, copy=copy)
+
+    # PETSc vector
+    if PETSc is not None and isinstance(obj, PETSc.Vec):
+        a = obj.getArray(readonly=True)
+        return a.copy() if copy else a
+
+    # pyadjoint scalar
+    if isinstance(obj, pyadjoint.AdjFloat):
+        return np.array(float(obj), dtype=np.float64)
+
+    raise TypeError(f"Cannot convert type {type(obj)} to numpy.")
+
+
+def numpy_to_fenics(a: np.ndarray, template, *, owned_only: bool = True):
+    """
+    Convert numpy -> DOLFINx object, using `template` as type/space guide.
+
+    Notes:
+      - For Functions, expects the array to match the OWNED dof count (by default).
+      - For Constants, we update `template.value` (no need to recreate the Constant).
+    """
+    # DOLFINx Constant: update value (recommended style in DOLFINx)
+    if isinstance(template, fem.Constant):
+        # Ensure dtype compatibility
+        template.value = np.asarray(a, dtype=np.asarray(template.value).dtype)
+        return template
+
+    # DOLFINx Function: create a new function on the same space and fill owned dofs
+    if isinstance(template, fem.Function):
+        V = template.function_space
+        u = fem.Function(V)
+
+        n_owned, _ = _owned_size(V)
+        target_dtype = u.x.array.dtype
+
+        flat = np.asarray(a, dtype=target_dtype).reshape(-1)
+        if owned_only:
+            if flat.size != n_owned:
+                raise ValueError(
+                    f"Wrong size for owned dofs: got {flat.size}, expected {n_owned}."
+                )
+            u.x.array[:n_owned] = flat
         else:
-            return type(fenics_var_template)(numpy_array)
+            # If you explicitly pass owned+ghost entries
+            if flat.size != u.x.array.size:
+                raise ValueError(
+                    f"Wrong size (owned+ghost): got {flat.size}, expected {u.x.array.size}."
+                )
+            u.x.array[:] = flat
 
-    if isinstance(fenics_var_template, (fem.Function,pyadjoint.Function)):
-        np_n_sub = numpy_array.shape[-1]
-        np_size = np.prod(numpy_array.shape)
-
-        function_space = fenics_var_template.function_space()
-
-        u = type(fenics_var_template)(function_space)
-        fenics_size = u.vector().local_size()
-        fenics_n_sub = function_space.num_sub_spaces()
-
-        if (fenics_n_sub != 0 and np_n_sub != fenics_n_sub) or np_size != fenics_size:
-            err_msg = 'Cannot convert numpy array to Function:' \
-                      ' Wrong shape {} vs {}'.format(numpy_array.shape, u.vector().get_local().shape)
-            raise ValueError(err_msg)
-
-        if numpy_array.dtype != np.float64:
-            err_msg = 'The numpy array must be of type {}, ' \
-                      'but got {}'.format(np.float64, numpy_array.dtype)
-            raise ValueError(err_msg)
-
-        u.vector().set_local(np.reshape(numpy_array, fenics_size))
-        u.vector().apply('insert')
+        # Populate ghosts from owners
+        u.x.scatter_forward()
         return u
 
-    if isinstance(fenics_var_template, pyadjoint.AdjFloat):
-        return pyadjoint.AdjFloat(numpy_array)
+    # pyadjoint scalar
+    if isinstance(template, pyadjoint.AdjFloat):
+        return pyadjoint.AdjFloat(float(np.asarray(a)))
 
-    err_msg = 'Cannot convert numpy array to {}'.format(fenics_var_template)
-    raise ValueError(err_msg)
+    raise TypeError(f"Cannot convert numpy array to {type(template)}.")

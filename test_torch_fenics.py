@@ -1,7 +1,9 @@
 import pytest
 
-from firedrake import *
-from firedrake.adjoint import *
+from mpi4py import MPI
+from dolfinx import fem, mesh
+from dolfinx.fem.petsc import LinearProblem
+import ufl
 
 import torch
 import numpy as np
@@ -12,8 +14,8 @@ import torch_fenics
 class Squares(torch_fenics.FEniCSModule):
     def __init__(self):
         super(Squares, self).__init__()
-        mesh = IntervalMesh(4, 0, 1)
-        self.V = FunctionSpace(mesh, 'DG', 0)
+        domain = mesh.create_unit_square(MPI.COMM_WORLD,10,10)
+        self.V = FunctionSpace(domain, 'DG', 0)
 
     def solve(self, f1, f2):
         u = TrialFunction(self.V)
