@@ -23,7 +23,7 @@ class Poisson(torch_fenics.FEniCSModule):
 
         # Create function space
         #mesh = UnitIntervalMesh(20)
-        self.domain = mesh.create_unit_square(MPI.COMM_WORLD,10,10)
+        self.domain = mesh.create_unit_interval(MPI.COMM_WORLD,10)
         self.V = fem.functionspace(self.domain, ('P', 1))
 
         # Create trial and test functions
@@ -80,8 +80,8 @@ if __name__ == '__main__':
 
     # Create N sets of input
     N = 10
-    f = torch.rand(N, 1, requires_grad=True, dtype=torch.float64)
-    g = torch.rand(N, 1, requires_grad=True, dtype=torch.float64)
+    f = torch.rand(1, requires_grad=True, dtype=torch.float64)
+    g = torch.rand(1, requires_grad=True, dtype=torch.float64)
 
     # Solve the Poisson equation N times
     u = poisson(f, g)
