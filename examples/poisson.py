@@ -52,7 +52,7 @@ class Poisson(torch_fenics.FEniCSModule):
         self.make_boundary(g)
 
         # Solve the Poisson equation
-        u = fem.functionspace(self.V)
+        #u = fem.functionspace(self.V)
         #solve(self.a == L, u, bc)
         P1 = LinearProblem(
         self.a,
