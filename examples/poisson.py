@@ -27,8 +27,8 @@ class Poisson(torch_fenics.FEniCSModule):
         self.V = fem.functionspace(self.domain, ('P', 1))
 
         # Create trial and test functions
-        self.u = ufl.trialfunction(self.V)
-        self.v = ufl.testfunction(self.V)
+        u = ufl.TrialFunction(self.V)
+        self.v = ufl.TestFunction(self.V)
 
         # Construct bilinear form
         self.a = ufl.inner(ufl.grad(u), ufl.grad(self.v)) * ufl.dx
