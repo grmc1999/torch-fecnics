@@ -2,9 +2,7 @@ from abc import ABC, abstractmethod
 
 #import fenics
 from dolfinx import fem
-from dolfinx.fem import *
 import pyadjoint
-from pyadjoint import *
 
 import torch
 import numpy as np
