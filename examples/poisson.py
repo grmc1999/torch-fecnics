@@ -49,7 +49,7 @@ class Poisson(torch_fenics.FEniCSModule):
         L = f * self.v * ufl.dx
 
         # Construct boundary condition
-        self.make_boundary()
+        self.make_boundary(g)
 
         # Solve the Poisson equation
         u = fem.functionspace(self.V)
