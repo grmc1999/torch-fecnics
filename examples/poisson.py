@@ -6,6 +6,7 @@ import sys
 sys.append("..")
 from torch_fenics.torch_fenics import *
 from firedrake.adjoint import *
+import firedrake as fd
 
 import torch_fenics
 
@@ -18,33 +19,33 @@ class Poisson(torch_fenics.FEniCSModule):
         super().__init__()
 
         # Create function space
-        mesh = UnitIntervalMesh(20)
-        self.V = FunctionSpace(mesh, 'P', 1)
+        mesh = fd.UnitIntervalMesh(20)
+        self.V = fd.FunctionSpace(mesh, 'P', 1)
 
         # Create trial and test functions
-        u = TrialFunction(self.V)
-        self.v = TestFunction(self.V)
+        u = fd.TrialFunction(self.V)
+        self.v = fd.TestFunction(self.V)
 
         # Construct bilinear form
-        self.a = inner(grad(u), grad(self.v)) * dx
+        self.a = fd.inner(fd.grad(u), fd.grad(self.v)) * fd.dx
 
     def solve(self, f, g):
         # Construct linear form
-        L = f * self.v * dx
+        L = f * self.v * fd.dx
 
         # Construct boundary condition
-        bc = DirichletBC(self.V, g, 'on_boundary')
+        bc = fd.DirichletBC(self.V, g, 'on_boundary')
 
         # Solve the Poisson equation
-        u = Function(self.V)
-        solve(self.a == L, u, bc)
+        u = fd.Function(self.V)
+        fd.solve(self.a == L, u, bc)
 
         # Return the solution
         return u
 
     def input_templates(self):
         # Declare templates for the inputs to Poisson.solve
-        return Constant(0), Constant(0)
+        return fd.Constant(0), fd.Constant(0)
 
 
 if __name__ == '__main__':
