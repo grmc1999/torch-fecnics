@@ -8,7 +8,7 @@ from dolfinx import fem,mesh
 from dolfinx.fem.petsc import LinearProblem
 from mpi4py import MPI
 import ufl
-sys.append("..")
+sys.path.append("..")
 from torch_fenics.torch_fenics import *
 
 import torch_fenics
