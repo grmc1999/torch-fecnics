@@ -9,7 +9,7 @@ import torch
 import firedrake as fd
 from firedrake import adjoint
 from .numpy_firedrake import numpy_to_firedrake, firedrake_to_numpy
-import numpy_to_firedrake
+#import numpy_to_firedrake
 
 class FiredrakeFunction(torch.autograd.Function):
     """Executes the solve() method of a FiredrakeModule and differentiates with firedrake.adjoint."""
