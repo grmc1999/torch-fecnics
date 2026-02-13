@@ -175,10 +175,11 @@ class FiredrakeModule(ABC, torch.nn.Module):
           each arg is [N, ...template_shape...]
         """
         if len(args) != 0:
-            n = args[0].shape[0]
-            for arg in args[1:]:
-                if arg.shape[0] != n:
-                    raise ValueError("Batch size must be the same for each input argument.")
+            if len(args[0].shape) > 0:
+                n = args[0].shape[0]
+                for arg in args[1:]:
+                    if arg.shape[0] != n:
+                        raise ValueError("Batch size must be the same for each input argument.")
 
         # Run per-sample (simple + safe with tapes; you can optimize later)
         outs = [FiredrakeFunction.apply(self, *inp) for inp in zip(*args)]
