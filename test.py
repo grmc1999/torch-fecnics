@@ -5,7 +5,7 @@ import torch_fenics
 import torch
 
 
-class Poisson(torch_fenics.FEniCSModule):
+class Poisson(torch_fenics.FiredrakeModule):
     # Construct variables which can be reused in the constructor
     def __init__(self):
         # Call super constructor
