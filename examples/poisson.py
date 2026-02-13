@@ -3,7 +3,7 @@ import torch
 # Import fenics and override necessary data structures with fenics_adjoint
 import os
 import sys
-sys.append("..")
+sys.path.append("..")
 from torch_fenics.torch_fenics import *
 from firedrake.adjoint import *
 import firedrake as fd
