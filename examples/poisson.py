@@ -8,11 +8,11 @@ sys.path.append("..")
 from firedrake.adjoint import *
 import firedrake as fd
 
-import torch_fenics
+import torch_firedrake
 
 # Declare the FEniCS model corresponding to solving the Poisson equation
 # with variable source term and boundary value
-class Poisson(torch_fenics.FEniCSModule):
+class Poisson(torch_firedrake.FEniCSModule):
     # Construct variables which can be reused in the constructor
     def __init__(self):
         # Call super constructor
