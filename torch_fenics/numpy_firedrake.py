@@ -1,9 +1,3 @@
-#import fenics
-import firedrake
-from  firedrake import adjoint
-#import fenics_adjoint
-import numpy as np
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
