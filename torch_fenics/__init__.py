@@ -3,7 +3,7 @@
 import firedrake
 #firedrake.set_log_level(firedrake.LogLevel.ERROR)
 
-from .torch_fenics import FEniCSModule
+from .torch_firedrake import FiredrakeModule
 
-from .numpy_fenics import fenics_to_numpy
-from .numpy_fenics import numpy_to_fenics
+from .numpy_firedrake import firedrake_to_numpy
+from .numpy_firedrake import numpy_to_firedrake
