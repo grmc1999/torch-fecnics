@@ -12,8 +12,8 @@ class Poisson(torch_fenics.FiredrakeModule):
         super().__init__()
 
         # Create function space
-        mesh = UnitIntervalMesh(20)
-        self.V = FunctionSpace(mesh, 'P', 1)
+        self.mesh = UnitIntervalMesh(20)
+        self.V = FunctionSpace(self.mesh, 'P', 1)
 
         # Create trial and test functions
         u = TrialFunction(self.V)
@@ -41,7 +41,8 @@ class Poisson(torch_fenics.FiredrakeModule):
 
     def input_templates(self):
         # Declare templates for the inputs to Poisson.solve
-        return Constant(0), Constant(0)
+        #return Constant(0), Constant(0)
+        return Function(FunctionSpace(self.mesh,'R',0)),Function(FunctionSpace(self.mesh,'R',0))
 
 
 if __name__ == '__main__':
