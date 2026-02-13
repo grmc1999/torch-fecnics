@@ -4,7 +4,7 @@ import torch
 import os
 import sys
 sys.path.append("..")
-from torch_fenics.torch_fenics import *
+#from torch_fenics.torch_fenics import *
 from firedrake.adjoint import *
 import firedrake as fd
 
