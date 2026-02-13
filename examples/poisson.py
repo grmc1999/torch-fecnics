@@ -8,7 +8,7 @@ sys.path.append("..")
 from firedrake.adjoint import *
 import firedrake as fd
 
-import torch_firedrake
+from torch_fenics import torch_firedrake
 
 # Declare the FEniCS model corresponding to solving the Poisson equation
 # with variable source term and boundary value
